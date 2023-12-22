@@ -96,9 +96,9 @@ class DCATradingStrategy(TradingStrategy):
             i = 0
             # Walk through each period for the year
             # and set the buy signal
-            while i < len(df_for_year["DCA_Action"]):
+            while i < len(df_for_year[f"{self.strategy}_Action"]):
                 dt = df_for_year.index[i]
-                self.df.loc[dt, "DCA_Action"] = 1.0
+                self.df.loc[dt, f"{self.strategy}_Action"] = 1.0
                 i += period
 
 
