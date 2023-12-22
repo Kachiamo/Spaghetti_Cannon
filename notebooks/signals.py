@@ -65,6 +65,36 @@ class BuyHoldTradingStrategy(TradingStrategy):
         self.df[f"{self.strategy}_Action"][0] = 1.0
 
 
+class DCATradingStrategy(TradingStrategy):
+    strategy = "DCA"
+
+    def __init__(self, *args, **kwargs):
+        super(DCATradingStrategy, self).__init__()
+        self.df = args[0]
+        self.ticker = kwargs.get("ticker")
+        self.contributions_per_year = kwargs.get("contributions_per_year", 12)
+        self.add_signals()
+
+    def add_signals(self):
+        self.df[f"{self.strategy}_Signal"] = 1.0
+        self.df[f"{self.strategy}_Action"] = 0.0
+
+        period = round(252/self.contributions_per_year)
+        # Get date range
+        start_year = self.df.index.date[0].year
+        end_year = self.df.index.date[-1].year
+
+        for year in range(start_year, end_year + 1):
+            df_for_year = self.df[self.df.index.year == year]
+            i = 0
+            while i < len(df_for_year["DCA_Action"]):
+                dt = df_for_year.index[i]
+                # print(dt)
+                self.df.loc[dt, "DCA_Action"] = 1.0
+                # df_for_year["DCA_Action"][i] = 1.0
+                i += period
+
+
 class SMATradingStrategy(TradingStrategy):
     strategy = "SMA"
 
