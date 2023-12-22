@@ -65,6 +65,43 @@ class BuyHoldTradingStrategy(TradingStrategy):
         self.df[f"{self.strategy}_Action"][0] = 1.0
 
 
+class DCATradingStrategy(TradingStrategy):
+    strategy = "DCA"
+
+    def __init__(self, *args, **kwargs):
+        super(DCATradingStrategy, self).__init__()
+        self.df = args[0]
+        self.ticker = kwargs.get("ticker")
+        self.contributions_per_year = kwargs.get("contributions_per_year", 12)
+        self.add_signals()
+
+    def add_signals(self):
+        self.df[f"{self.strategy}_Signal"] = 1.0
+        self.df[f"{self.strategy}_Action"] = 0.0
+
+        # The period is the number of days between contributions
+        period = round(252/self.contributions_per_year)
+
+        # Get date range
+        start_year = self.df.index.date[0].year
+        end_year = self.df.index.date[-1].year
+
+        # There might be a more elegant way to pull this off without a for and while loop
+        # Just can't think of it at the moment.
+        # Might involve using the datetime.timetuple().tm_yday
+        # This might also be needed for the ML model to properly train using day of year
+        for year in range(start_year, end_year + 1):
+            # Get a dataframe for each year
+            df_for_year = self.df[self.df.index.year == year]
+            i = 0
+            # Walk through each period for the year
+            # and set the buy signal
+            while i < len(df_for_year[f"{self.strategy}_Action"]):
+                dt = df_for_year.index[i]
+                self.df.loc[dt, f"{self.strategy}_Action"] = 1.0
+                i += period
+
+
 class SMATradingStrategy(TradingStrategy):
     strategy = "SMA"
 
