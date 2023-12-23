@@ -62,7 +62,7 @@ class BuyHoldTradingStrategy(TradingStrategy):
     def add_signals(self):
         self.df[f"{self.strategy}_Signal"] = 1.0
         self.df[f"{self.strategy}_Action"] = self.df[f"{self.strategy}_Signal"].diff()
-        self.df[f"{self.strategy}_Action"][0] = 1.0
+        self.df.loc[self.df.index[0], f"{self.strategy}_Action"] = 1.0
 
 
 class DCATradingStrategy(TradingStrategy):
@@ -119,7 +119,8 @@ class SMATradingStrategy(TradingStrategy):
         self.df[self.short_window_column] = self.df["Close"].rolling(window=self.short_window).mean()
         self.df[self.long_window_column] = self.df["Close"].rolling(window=self.long_window).mean()
         self.df[f"{self.strategy}_Signal"] = 0.0
-        self.df[f"{self.strategy}_Signal"][self.short_window:] = np.where(
+        dt = self.df.index[self.short_window]
+        self.df.loc[dt:, f"{self.strategy}_Signal"] = np.where(
             self.df[self.short_window_column][self.short_window:] > self.df[self.long_window_column][self.short_window:], 1.0, 0.0
         )
         self.df[f"{self.strategy}_Action"] = self.df[f"{self.strategy}_Signal"].diff()
