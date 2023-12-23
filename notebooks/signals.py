@@ -8,6 +8,13 @@ SYMBOL_SELL = "v"
 SYMBOL_BUY = "^"
 
 
+def add_year_day(df):
+    '''
+    Utility function to add the day of the year to the dataframe
+    '''
+    df['Year_Day'] = [dt.timetuple().tm_yday for dt in df.index.to_pydatetime()]
+
+
 class TradingStrategy():
     strategy = "Strategy Abbreviation"
     df = None
