@@ -137,3 +137,37 @@ class SMATradingStrategy(TradingStrategy):
             title=f"{self.ticker} - {self.strategy}, Entry and Exit Points"
         )
         return combined_plot
+
+
+class RSITradingStrategy(TradingStrategy):
+    strategy = "RSI"
+
+    def __init__(self, *args, **kwargs):
+        super(RSITradingStrategy, self).__init__()
+        self.df = args[0]
+        self.ticker = kwargs.get("ticker")
+        self.window = kwargs.get("window", 14)
+        self.over_sold = kwargs.get("over_sold", 70)
+        self.under_sold = kwargs.get("under_sold", 30)
+        self.add_signals()
+
+    def add_signals(self):
+        self.df["Returns"] = self.df["Close"].pct_change()
+        # Create a column for positive returns
+        self.df["Positive_Returns"] = np.where(
+            self.df["Returns"] > 0, self.df["Returns"], 0.0
+        )
+        # Create a column for negative returns
+        self.df["Negative_Returns"] = np.where(
+            self.df["Returns"] < 0, self.df["Returns"], 0.0
+        )
+        # Create columns for positive and negative RS
+        self.df["Positive_RS"] = (self.df["Positive_Returns"].rolling(window=self.window).sum())/self.window
+        self.df["Negative_RS"] = (self.df["Negative_Returns"].rolling(window=self.window).sum())/(-self.window)
+
+        self.df[f"{self.strategy}_Signal"] = 100 - (100 / (1 + (self.df["Positive_RS"]/self.df["Negative_RS"])))
+        self.df[f"{self.strategy}_Action"] = np.where(
+            self.df[f"{self.strategy}_Signal"] >= self.over_sold, -1, np.where(
+                self.df[f"{self.strategy}_Signal"] <= self.under_sold, 1, 0
+            )
+        )
