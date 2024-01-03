@@ -4,5 +4,5 @@ from . import views
 
 
 urlpatterns = [
-    re_path(f"/?$", views.Backtest.as_view(), name="backtest"),
+    re_path(f"/?$", views.Stocks.as_view(), name="stocks"),
 ]
