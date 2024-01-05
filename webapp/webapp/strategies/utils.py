@@ -3,6 +3,7 @@ from .strategies import (
     DCATradingStrategy,
     SMATradingStrategy,
     RSITradingStrategy,
+    ATRTradingStrategy,
 )
 
 
@@ -11,6 +12,7 @@ STRATEGIES = {
     DCATradingStrategy.id: DCATradingStrategy,
     SMATradingStrategy.id: SMATradingStrategy,
     RSITradingStrategy.id: RSITradingStrategy,
+    ATRTradingStrategy.id: ATRTradingStrategy,
 }
 
 STRATEGY_CHOICES = [
@@ -18,4 +20,5 @@ STRATEGY_CHOICES = [
     (DCATradingStrategy.id, DCATradingStrategy.name),
     (SMATradingStrategy.id, SMATradingStrategy.name),
     (RSITradingStrategy.id, RSITradingStrategy.name),
+    (ATRTradingStrategy.id, ATRTradingStrategy.name),
 ]
