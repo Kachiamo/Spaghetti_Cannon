@@ -1,6 +1,6 @@
 bokeh==3.3.0
 # cassandra-driver==3.28.0
-cqlsh==6.1.2
+# cqlsh==6.1.2
 Django==4.2.6
 # django-cassandra-engine==1.8.0
 django-filter==23.5
