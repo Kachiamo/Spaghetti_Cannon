@@ -6,9 +6,9 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=pw
       - POSTGRES_DB=scannon
-      - CASSANDRA_HOST=cass
-      - CASSANDRA_CLUSTER_NAME=local_cluster
-      - CASSANDRA_DC=local_dc
+#       - CASSANDRA_HOST=cass
+#       - CASSANDRA_CLUSTER_NAME=local_cluster
+#       - CASSANDRA_DC=local_dc
     ports:
       - 8000:8000
     command: "python manage.py runserver 0.0.0.0:8000"
@@ -25,8 +25,8 @@ services:
     ports:
       - "5436:5432"
 
-  cass:
-    image: cassandra
-    environment:
-      - CASSANDRA_CLUSTER_NAME=local_cluster
-      - CASSANDRA_DC=local_dc
+  # cass:
+  #   image: cassandra
+  #   environment:
+  #     - CASSANDRA_CLUSTER_NAME=local_cluster
+  #     - CASSANDRA_DC=local_dc
