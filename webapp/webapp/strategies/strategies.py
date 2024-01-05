@@ -187,3 +187,34 @@ class RSITradingStrategy(TradingStrategy):
                 self.df[f"{self.strategy}_Signal"] <= self.under_sold, 1, 0
             )
         )
+
+
+class ATRTradingStrategy(TradingStrategy):
+    id = "atr"
+    name = "Average True Range"
+    strategy = "ATR"
+    features = [
+        "Close",
+        "TR",
+        "ATR",
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(ATRTradingStrategy, self).__init__()
+        self.df = args[0]
+        self.ticker = kwargs.get("ticker")
+        self.window = kwargs.get("window", 14)
+        self.atr_multiplier = kwargs.get("atr_multiplier", 1.5)
+        self.add_signals()
+
+    def add_signals(self):
+        self.df["Returns"] = self.df["Close"].pct_change()
+        # Create a column for positive returns
+        self.df["TR"] = self.df.apply(lambda row: max(row['High'] - row['Low'], abs(row['High'] - row['Close']), abs(row['Low'] - row['Close'])), axis=1)
+        self.df['ATR'] = self.df['TR'].rolling(window=self.window).mean()
+
+        self.df[f"{self.strategy}_Action"] = np.where(
+            self.df['Close'] - self.atr_multiplier * self.df['ATR'] > self.df['Close'].shift(1), 1.0, np.where(
+                self.df['Close'] + self.atr_multiplier * self.df['ATR'] < self.df['Close'].shift(1), -1.0, 0.0
+            )
+        )
