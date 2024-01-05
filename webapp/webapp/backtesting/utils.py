@@ -7,16 +7,6 @@ logging.basicConfig()
 log = logging.getLogger(__name__)
 
 
-SYMBOL_CHOICES = [
-    ("AAPL", "Apple"),
-    ("AMZN", "Amazon"),
-    ("LLY", "Eli Lilly And Co"),
-    ("META", "Facebook"),
-    ("TSLA", "Tesla"),
-    ("XOM", "Exxon Mobil"),
-]
-
-
 PERIOD_CHOICES = {
     "1mo": "1mo",
     "3mo": "3mo",
