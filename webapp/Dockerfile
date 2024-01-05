@@ -1,12 +1,14 @@
-FROM python:3.9.18-alpine
+FROM python:3.9-slim-bookworm
 
 # Install dependencies
-RUN apk update && \
-apk upgrade && \
-apk add --no-cache \
-postgresql \
-libpq \
-bash
+RUN apt update && \
+    apt upgrade && \
+    apt -y install \
+    postgresql \
+    libpq-dev \
+    python3-sklearn \
+    python3-sklearn-lib \
+    bash
 
 # Create /usr/src/app dir
 RUN mkdir -p /usr/src/app && mkdir -p /usr/web
@@ -16,7 +18,7 @@ WORKDIR /usr/src/app
 COPY requirements.txt .
 
 # Pip install requirements
-RUN pip3 install --no-cache-dir --upgrade pip==23.1.2 && \
+RUN pip3 install --no-cache-dir --upgrade pip==23.3.2 && \
     pip3 install --no-cache-dir -r requirements.txt
 
 # Copy project files
