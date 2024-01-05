@@ -109,21 +109,21 @@ DATABASES = {
             "client_encoding": "UTF8"
         }
     },
-    "cassandra": {
-        "ENGINE": "django_cassandra_engine",
-        "NAME": CASS_CLUSTER,
-        "HOST": CASS_HOST,
-        "OPTIONS": {
-            "replication": {
-                "strategy_class": "SimpleStrategy",
-                "replication_factor": 1,
-            },
-            "connection": {
-                "retry_connect": True,
-                "lazy_connect": True,
-            }
-        }
-    }
+    # "cassandra": {
+    #     "ENGINE": "django_cassandra_engine",
+    #     "NAME": CASS_CLUSTER,
+    #     "HOST": CASS_HOST,
+    #     "OPTIONS": {
+    #         "replication": {
+    #             "strategy_class": "SimpleStrategy",
+    #             "replication_factor": 1,
+    #         },
+    #         "connection": {
+    #             "retry_connect": True,
+    #             "lazy_connect": True,
+    #         }
+    #     }
+    # }
 }
 
 
