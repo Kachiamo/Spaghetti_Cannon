@@ -1,3 +1,4 @@
+import logging
 import pandas as pd
 import numpy as np
 import hvplot.pandas
@@ -8,6 +9,9 @@ COLOR_BUY = "green"
 COLOR_SELL = "red"
 SYMBOL_SELL = "v"
 SYMBOL_BUY = "^"
+
+logging.basicConfig()
+log = logging.getLogger(__name__)
 
 
 def add_year_day(df):
@@ -249,5 +253,8 @@ class StochasticOscillatorTradingStrategy(TradingStrategy):
         self.df['%D'] = self.df['%K'].rolling(window=self.d_period).mean()
         self.df['Long Signal'] = (self.df['%K'] < self.oversold) & (self.df['%D'] < self.oversold)
         self.df['Short Signal'] = (self.df['%K'] > self.overbought) & (self.df['%D'] > self.overbought)
-        self.df[f"{self.strategy}_Signal"] = np.where(self.df['Short Signal'], -1,       
-        np.where(self.df['Long Signal'], 1,0))
+        self.df[f"{self.strategy}_Action"] = np.where(
+            self.df['Short Signal'], -1, np.where(
+                self.df['Long Signal'], 1, 0
+            )
+        )
