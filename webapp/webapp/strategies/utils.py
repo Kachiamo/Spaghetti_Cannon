@@ -4,6 +4,7 @@ from .strategies import (
     SMATradingStrategy,
     RSITradingStrategy,
     ATRTradingStrategy,
+    StochasticOscillatorTradingStrategy,
 )
 
 
@@ -13,6 +14,7 @@ STRATEGIES = {
     SMATradingStrategy.id: SMATradingStrategy,
     RSITradingStrategy.id: RSITradingStrategy,
     ATRTradingStrategy.id: ATRTradingStrategy,
+    StochasticOscillatorTradingStrategy.id: StochasticOscillatorTradingStrategy,
 }
 
 STRATEGY_CHOICES = [
@@ -21,4 +23,5 @@ STRATEGY_CHOICES = [
     (SMATradingStrategy.id, SMATradingStrategy.name),
     (RSITradingStrategy.id, RSITradingStrategy.name),
     (ATRTradingStrategy.id, ATRTradingStrategy.name),
+    (StochasticOscillatorTradingStrategy.id, StochasticOscillatorTradingStrategy.name),
 ]
