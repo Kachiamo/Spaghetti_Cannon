@@ -2,6 +2,14 @@ import uuid
 from django.db import models
 
 
+def max_period():
+    return "max"
+
+
+def default_training_percent():
+    return 0.3
+
+
 class TradingModel(models.Model):
     class Meta:
         verbose_name = "Trading Model"
@@ -15,11 +23,10 @@ class TradingModel(models.Model):
     # Settings
     symbol = models.CharField(max_length=255)
     strategy = models.CharField(max_length=255)
-    strategy_settings = models.JSONField()
     ml_model = models.CharField(max_length=255)
-    ml_model_settings = models.JSONField()
-    training_start_date = models.DateField()
-    training_end_date = models.DateField()
+    training_percent = models.FloatField(default=default_training_percent)
+    period = models.CharField(default=max_period, max_length=3)
+
     # Outcome
     accuracy = models.FloatField(null=True, blank=True)
     precision_buy = models.FloatField(null=True, blank=True)

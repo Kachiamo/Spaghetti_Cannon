@@ -15,13 +15,13 @@ ML_MODELS = {
     "logistic_regression": train_logistic_regression,
 }
 
-def train_trading_model(trading_model, train=0.3, period="1y"):
+def train_trading_model(trading_model):
     # probably not the best name, but returns a strategy with df, signals, actions, and plotting
-    strategy = backtest(trading_model.strategy, trading_model.symbol, period)
+    strategy = backtest(trading_model.strategy, trading_model.symbol, trading_model.period)
 
     # get X_train and y_train
     # Get the length for training data size
-    train_length = round(len(strategy.df.keys())*train)
+    train_length = round(len(strategy.df.keys())*trading_model.training_percent)
 
     # Clean the data for training
     df = strategy.df.dropna()
