@@ -1,18 +1,21 @@
 import logging
 
 from backtesting.utils import backtest
-from .ml_models import train_logistic_regression
+from .ml_models import train_logistic_regression, train_svc
+
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
 
 
 ML_MODEL_CHOICES = [
-    ("logistic_regression", "logistic regression")
+    ("logistic_regression", "logistic regression"),
+    ("svc", "support vector classification"),
 ]
 
 ML_MODELS = {
     "logistic_regression": train_logistic_regression,
+    "svc": train_svc,
 }
 
 def train_trading_model(trading_model):
