@@ -218,3 +218,36 @@ class ATRTradingStrategy(TradingStrategy):
                 self.df['Close'] + self.atr_multiplier * self.df['ATR'] < self.df['Close'].shift(1), -1.0, 0.0
             )
         )
+
+
+class StochasticOscillatorTradingStrategy(TradingStrategy):
+    id = "stoch"
+    name = "Stochastic Oscillator"
+    strategy = "SO"
+    features = [
+        "Close",
+        "%K",
+        "%D",
+        "Long Signal",
+        "Short Signal",
+        "Low",
+        "High",
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(StochasticOscillatorTradingStrategy, self).__init__()
+        self.df = args[0]
+        self.ticker = kwargs.get("ticker")
+        self.k_period = kwargs.get("k_period", 14)
+        self.d_period = kwargs.get("d_period", 3)
+        self.overbought = kwargs.get("overbought", 80)
+        self.oversold = kwargs.get("overbought", 20)
+        self.add_signals()
+
+    def add_signals(self):
+        self.df['%K'] = 100 * ((self.df['Close'] - self.df['Low'].rolling(window=self.k_period).min()) / (self.df['High'].rolling(window=self.k_period).max() - self.df['Low'].rolling(window=self.k_period).min()))
+        self.df['%D'] = self.df['%K'].rolling(window=self.d_period).mean()
+        self.df['Long Signal'] = (self.df['%K'] < self.oversold) & (self.df['%D'] < self.oversold)
+        self.df['Short Signal'] = (self.df['%K'] > self.overbought) & (self.df['%D'] > self.overbought)
+        self.df[f"{self.strategy}_Signal"] = np.where(self.df['Short Signal'], -1,       
+        np.where(self.df['Long Signal'], 1,0))
