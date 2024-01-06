@@ -4,6 +4,7 @@ from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.response import Response
 
+from .utils import train_trading_model
 from .import serializers, models
 
 
@@ -21,8 +22,18 @@ class TradingModel(generics.RetrieveUpdateDestroyAPIView):
     queryset = models.TradingModel.objects.all()
 
 
-class TrainTradingModel(generics.UpdateAPIView):
+class TrainTradingModel(generics.RetrieveUpdateAPIView):
     permission_classes = []
     authentication_classes = []
-    serializer_class = serializers.TradingModel
     queryset = models.TradingModel.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return serializers.TradingModel
+        else:
+            return serializers.TrainSerializer
+
+    def update(self, request, *args, **kwargs):
+        trading_model = self.get_object()
+        train_trading_model(trading_model)
+        return Response(None, status.HTTP_200_OK)
