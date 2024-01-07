@@ -1,4 +1,5 @@
 import logging
+import math
 import pandas as pd
 import numpy as np
 import hvplot.pandas
@@ -29,6 +30,45 @@ class TradingStrategy():
     def add_signals(self):
         pass
 
+    def add_position_and_returns(self):
+        # Compute Daily Returns and Cumulative Daily Returns
+        self.df["Daily_Returns"] = self.df["Close"].pct_change()
+        self.df["Cumulative_Daily_Returns"] = (self.df["Daily_Returns"] + 1).cumprod()
+
+        # Compute Position
+        self.df["{self.strategy}_Position"] = 0
+        # Compute Position Returns
+        current_position = 0
+        for index, row in self.df.iterrows():
+            action = row[f"{self.strategy}_Action"]
+            action = action if not math.isnan(action) else 0
+            current_position = max(current_position + action, 0)
+            self.df.loc[index, f"{self.strategy}_Position"] = current_position
+        self.df[f"{self.strategy}_Daily_Returns"] = self.df["Daily_Returns"] * self.df[f"{self.strategy}_Position"]
+        self.df[f"{self.strategy}_Cumulative_Daily_Returns"] = (self.df[f"{self.strategy}_Daily_Returns"] + 1).cumprod()
+
+    def plot_returns(self):
+        plot = figure(x_range=(self.df.index[0], self.df.index[-1]), frame_width=1024, frame_height=768)
+        plot.line(
+            x=self.df.index,
+            y=self.df[["Cumulative_Daily_Returns"]],
+            legend_label="Cumulative Daily Returns",
+            color="blue",
+        )
+        plot.line(
+            x=self.df.index,
+            y=self.df[[f"{self.strategy}_Cumulative_Daily_Returns"]],
+            legend_label=f"{self.strategy} Cumulative Daily Returns",
+            color=COLOR_BUY,
+        )
+        plot.line(
+            x=self.df.index,
+            y=self.df[[f"{self.strategy}_Position"]],
+            legend_label="Strategy Position",
+            color="black",
+        )
+        return plot
+
     def plot(self):
         plot = figure(x_range=(self.df.index[0], self.df.index[-1]), frame_width=1024, frame_height=768)
         plot.line(
@@ -57,6 +97,7 @@ class BuyHoldTradingStrategy(TradingStrategy):
     strategy = "BuyHold"
     features = []
 
+
     def __init__(self, *args, **kwargs):
         super(BuyHoldTradingStrategy, self).__init__()
         self.df = args[0]
@@ -67,6 +108,7 @@ class BuyHoldTradingStrategy(TradingStrategy):
         self.df[f"{self.strategy}_Signal"] = 1.0
         self.df[f"{self.strategy}_Action"] = self.df[f"{self.strategy}_Signal"].diff()
         self.df.loc[self.df.index[0], f"{self.strategy}_Action"] = 1.0
+        self.add_position_and_returns()
 
 
 class DCATradingStrategy(TradingStrategy):
@@ -107,6 +149,7 @@ class DCATradingStrategy(TradingStrategy):
                 dt = df_for_year.index[i]
                 self.df.loc[dt, f"{self.strategy}_Action"] = 1.0
                 i += period
+        self.add_position_and_returns()
 
 
 class SMATradingStrategy(TradingStrategy):
@@ -134,6 +177,7 @@ class SMATradingStrategy(TradingStrategy):
             self.df[self.short_window_column][self.short_window:] > self.df[self.long_window_column][self.short_window:], 1.0, 0.0
         )
         self.df[f"{self.strategy}_Action"] = self.df[f"{self.strategy}_Signal"].diff()
+        self.add_position_and_returns()
 
     def plot(self):
         plot = super(SMATradingStrategy, self).plot()
@@ -191,6 +235,7 @@ class RSITradingStrategy(TradingStrategy):
                 self.df[f"{self.strategy}_Signal"] <= self.under_sold, 1, 0
             )
         )
+        self.add_position_and_returns()
 
 
 class ATRTradingStrategy(TradingStrategy):
@@ -222,6 +267,7 @@ class ATRTradingStrategy(TradingStrategy):
                 self.df['Close'] + self.atr_multiplier * self.df['ATR'] < self.df['Close'].shift(1), -1.0, 0.0
             )
         )
+        self.add_position_and_returns()
 
 
 class StochasticOscillatorTradingStrategy(TradingStrategy):
@@ -258,6 +304,7 @@ class StochasticOscillatorTradingStrategy(TradingStrategy):
                 self.df['Long Signal'], 1, 0
             )
         )
+        self.add_position_and_returns()
 
     
 class MovingAverageConvergenceDivergenceTradingStrategy(TradingStrategy):
@@ -275,7 +322,7 @@ class MovingAverageConvergenceDivergenceTradingStrategy(TradingStrategy):
     ]
 
     def __init__(self, *args, **kwargs):
-        super(MovingAverageConvergenceDivergence, self).__init__()
+        super(MovingAverageConvergenceDivergenceTradingStrategy, self).__init__()
         self.df = args[0]
         self.ticker = kwargs.get("ticker")
         self.short_window = kwargs.get("short_window", 12)
@@ -296,4 +343,4 @@ class MovingAverageConvergenceDivergenceTradingStrategy(TradingStrategy):
                 self.df['Long Signal'], 1,0
             )
         )
-        
+        self.add_position_and_returns()

@@ -1,5 +1,8 @@
 import logging
 
+from dateutil.relativedelta import relativedelta
+from pandas.tseries.offsets import DateOffset
+
 from backtesting.utils import backtest
 from .ml_models import train_logistic_regression, train_svc
 
@@ -18,19 +21,24 @@ ML_MODELS = {
     "svc": train_svc,
 }
 
+
 def train_trading_model(trading_model):
     # probably not the best name, but returns a strategy with df, signals, actions, and plotting
     strategy = backtest(trading_model.strategy, trading_model.symbol, trading_model.period)
 
-    # get X_train and y_train
-    # Get the length for training data size
-    train_length = round(len(strategy.df.keys())*trading_model.training_percent)
-
     # Clean the data for training
     df = strategy.df.dropna()
 
+    # get X_train and y_train
+    # Get the length for training data size
+    train_start = df.index[0]
+    time_delta = relativedelta(df.index[-1], train_start)
+    total_months = time_delta.months + time_delta.years*12
+    train_months = round(total_months*trading_model.training_percent)
+    train_end_date = train_start + DateOffset(months=train_months)
+
     # Get the training dataframe
-    train = df[:train_length]
+    train = df[:train_end_date]
 
     # Get the name of the action column
     y_column = f"{strategy.strategy}_Action"
