@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 from pandas.tseries.offsets import DateOffset
 
 from backtesting.utils import backtest
-from .ml_models import train_logistic_regression, train_svc
+from .ml_models import train_logistic_regression, train_svc, train_random_forest_classifier
 
 
 logging.basicConfig()
@@ -14,11 +14,13 @@ log = logging.getLogger(__name__)
 ML_MODEL_CHOICES = [
     ("logistic_regression", "logistic regression"),
     ("svc", "support vector classification"),
+    ("rfc", "random forest classifier"),
 ]
 
 ML_MODELS = {
     "logistic_regression": train_logistic_regression,
     "svc": train_svc,
+    "rfc": train_random_forest_classifier,
 }
 
 
