@@ -1,4 +1,5 @@
 import logging
+import sys
 import math
 import pandas as pd
 import numpy as np
@@ -26,6 +27,7 @@ class TradingStrategy():
     strategy = "Strategy Abbreviation"
     df = None
     ticker = None
+    max_position = sys.maxsize
 
     def add_signals(self):
         pass
@@ -42,9 +44,14 @@ class TradingStrategy():
         for index, row in self.df.iterrows():
             action = row[f"{self.strategy}_Action"]
             action = action if not math.isnan(action) else 0
-            current_position = max(current_position + action, 0)
+            current_position = min(max(current_position + action, 0), self.max_position)
+            self.df.loc[index, f"{self.strategy}_Enabled"] = min(current_position, 1)
             self.df.loc[index, f"{self.strategy}_Position"] = current_position
-        self.df[f"{self.strategy}_Daily_Returns"] = self.df["Daily_Returns"] * self.df[f"{self.strategy}_Position"]
+        self.df[f"{self.ticker}_Cost"] = self.df["Close"] * self.df[f"{self.strategy}_Action"]
+        self.df[f"{self.ticker}_Cummulative_Cost"] = self.df[f"{self.ticker}_Cost"].cumsum()
+        self.df[f"{self.ticker}_Holdings"] = self.df["Close"] * self.df[f"{self.strategy}_Position"]
+        self.df[f"{self.ticker}_Profits"] = self.df[f"{self.ticker}_Holdings"] - self.df[f"{self.ticker}_Cummulative_Cost"]
+        self.df[f"{self.strategy}_Daily_Returns"] = self.df["Daily_Returns"] * self.df[f"{self.strategy}_Enabled"]
         self.df[f"{self.strategy}_Cumulative_Daily_Returns"] = (self.df[f"{self.strategy}_Daily_Returns"] + 1).cumprod()
 
     def plot_returns(self):
@@ -63,9 +70,31 @@ class TradingStrategy():
         )
         plot.line(
             x=self.df.index,
-            y=self.df[[f"{self.strategy}_Position"]],
-            legend_label="Strategy Position",
+            y=self.df[[f"{self.strategy}_Enabled"]],
+            legend_label="Strategy Enabled",
             color="black",
+        )
+        return plot
+    
+    def plot_holdings(self):
+        plot = figure(x_range=(self.df.index[0], self.df.index[-1]), frame_width=1024, frame_height=768)
+        plot.line(
+            x=self.df.index,
+            y=self.df[[f"{self.ticker}_Holdings"]],
+            legend_label=f"{self.ticker} Holdings",
+            color="black",
+        )
+        plot.line(
+            x=self.df.index,
+            y=self.df[[f"{self.ticker}_Cummulative_Cost"]],
+            legend_label=f"{self.ticker} Cummulative Cost",
+            color="red",
+        )
+        plot.line(
+            x=self.df.index,
+            y=self.df[[f"{self.ticker}_Profits"]],
+            legend_label=f"{self.ticker} Profits",
+            color="green",
         )
         return plot
 
