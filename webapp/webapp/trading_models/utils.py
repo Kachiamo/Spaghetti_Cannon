@@ -2,6 +2,7 @@ import logging
 
 from dateutil.relativedelta import relativedelta
 from pandas.tseries.offsets import DateOffset
+from sklearn.preprocessing import StandardScaler
 
 from backtesting.utils import backtest
 from .ml_models import train_logistic_regression, train_svc
@@ -23,11 +24,22 @@ ML_MODELS = {
 
 
 def train_trading_model(trading_model):
+    scaler = StandardScaler()
     # probably not the best name, but returns a strategy with df, signals, actions, and plotting
     strategy = backtest(trading_model.strategy, trading_model.symbol, trading_model.period)
 
     # Clean the data for training
     df = strategy.df.dropna()
+
+    # Get the name of the action column
+    y_column_name = f"{strategy.strategy}_Action"
+    y = df[y_column_name]
+
+    # Drop columns that are not features
+    log.critical(f"column name: {df.columns.values}")
+    log.critical(f"strategy.features: {strategy.features}")
+    df = df[strategy.features]
+    log.critical(df.columns.values)
 
     # get X_train and y_train
     # Get the length for training data size
@@ -38,12 +50,9 @@ def train_trading_model(trading_model):
     train_end_date = train_start + DateOffset(months=train_months)
 
     # Get the training dataframe
-    train = df[:train_end_date]
+    X_train = df[:train_end_date]
 
-    # Get the name of the action column
-    y_column = f"{strategy.strategy}_Action"
-    y_train = train[y_column]
-    X_train = train.drop(columns=[y_column])
+    y_train = y[:train_end_date]
 
     # Get the model class
     model_class = ML_MODELS.get(trading_model.ml_model)
