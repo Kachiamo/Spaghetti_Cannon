@@ -305,3 +305,42 @@ class StochasticOscillatorTradingStrategy(TradingStrategy):
             )
         )
         self.add_position_and_returns()
+
+    
+class MovingAverageConvergenceDivergenceTradingStrategy(TradingStrategy):
+    id = "macd"
+    name = "Moving Average Convergence Divergence"
+    strategy = "MACD"
+    features = [
+        "Close",
+        "Short EMA",
+        "Long EMA",
+        "Long Signal",
+        "Short Signal",
+        "Signal Line",
+        "MACD Hisotgram",
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(MovingAverageConvergenceDivergenceTradingStrategy, self).__init__()
+        self.df = args[0]
+        self.ticker = kwargs.get("ticker")
+        self.short_window = kwargs.get("short_window", 12)
+        self.long_window = kwargs.get("long_window", 26)
+        self.signal_window = kwargs.get("signal_window", 9)
+        self.add_signals()
+
+    def add_signals(self):
+        self.df['Short_EMA'] = self.df['Close'].ewm(span=self.short_window, adjust=False).mean()
+        self.df['Long_EMA'] = self.df['Close'].ewm(span=self.long_window, adjust=False).mean()
+        self.df['MACD'] = self.df['Short_EMA'] - self.df['Long_EMA']
+        self.df['Signal_Line'] = self.df['MACD'].ewm(span=self.signal_window, adjust=False).mean()
+        self.df['MACD_Histogram'] = self.df['MACD'] - self.df['Signal_Line']
+        self.df['Long Signal'] = self.df['MACD'] > self.df['Signal_Line']
+        self.df['Short Signal'] = self.df['MACD'] < self.df['Signal_Line']
+        self.df[f"{self.strategy}_Action"] = np.where(
+            self.df['Short Signal'], -1, np.where(
+                self.df['Long Signal'], 1,0
+            )
+        )
+        self.add_position_and_returns()
