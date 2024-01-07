@@ -9,10 +9,13 @@
         <h1>Strategy: {{strategy.name}}</h1>
         <h2>Symbol: {{strategy.ticker}}</h2>
         {{plots.strategy.div| safe}}
+        <h2>Returns</h2>
+        {{plots.returns.div| safe}}
     </body>
     <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.3.0.min.js"></script>
     <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.3.0.min.js"></script>
     <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-3.3.0.min.js"></script>
     <script src="https://cdn.bokeh.org/bokeh/release/bokeh-api-3.3.0.min.js"></script>
     {{plots.strategy.script| safe}}
+    {{plots.returns.script| safe}}
 </html>

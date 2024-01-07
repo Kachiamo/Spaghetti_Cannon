@@ -27,12 +27,17 @@ class Backtest(generics.CreateAPIView):
 
         # Get the bokeh components to render
         strategy_script, strategy_div = components(strategy.plot())
+        returns_script, returns_div = components(strategy.plot_returns())
         kwargs = {
             "strategy": strategy,
             "plots": {
                 "strategy": {
                     "script": strategy_script,
                     "div": strategy_div,
+                },
+                "returns": {
+                    "script": returns_script,
+                    "div": returns_div,
                 }
             }
         }
