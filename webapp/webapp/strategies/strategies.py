@@ -144,7 +144,7 @@ class DCATradingStrategy(TradingStrategy):
     id = "dca"
     name = "Dollar Cost Average"
     strategy = "DCA"
-    features = ["year_day"]
+    features = []
 
     def __init__(self, *args, **kwargs):
         super(DCATradingStrategy, self).__init__()
@@ -185,7 +185,7 @@ class SMATradingStrategy(TradingStrategy):
     id = "sma"
     name = "Simple Moving Average"
     strategy = "SMA"
-    features = ["Close", "short_window", "long_window"]
+    features = ["SMA_Short_Window", "SMA_Long_Window"]
 
     def __init__(self, *args, **kwargs):
         super(SMATradingStrategy, self).__init__()
@@ -193,31 +193,29 @@ class SMATradingStrategy(TradingStrategy):
         self.ticker = kwargs.get("ticker")
         self.short_window = kwargs.get("short_window", 50)
         self.long_window = kwargs.get("long_window", 100)
-        self.short_window_column = f"{self.strategy}_{self.short_window}"
-        self.long_window_column = f"{self.strategy}_{self.long_window}"
         self.add_signals()
 
     def add_signals(self):
-        self.df[self.short_window_column] = self.df["Close"].rolling(window=self.short_window).mean()
-        self.df[self.long_window_column] = self.df["Close"].rolling(window=self.long_window).mean()
-        self.df[f"{self.strategy}_Signal"] = 0.0
+        self.df["SMA_Short_Window"] = self.df["Close"].rolling(window=self.short_window).mean()
+        self.df["SMA_Long_Window"] = self.df["Close"].rolling(window=self.long_window).mean()
+        self.df["SMA_Signal"] = 0.0
         dt = self.df.index[self.short_window]
-        self.df.loc[dt:, f"{self.strategy}_Signal"] = np.where(
-            self.df[self.short_window_column][self.short_window:] > self.df[self.long_window_column][self.short_window:], 1.0, 0.0
+        self.df.loc[dt:, "SMA_Signal"] = np.where(
+            self.df["SMA_Short_Window"][self.short_window:] > self.df["SMA_Long_Window"][self.short_window:], 1.0, 0.0
         )
-        self.df[f"{self.strategy}_Action"] = self.df[f"{self.strategy}_Signal"].diff()
+        self.df["SMA_Action"] = self.df["SMA_Signal"].diff()
         self.add_position_and_returns()
 
     def plot(self):
         plot = super(SMATradingStrategy, self).plot()
         plot.line(
             x=self.df.index,
-            y=self.df[[self.short_window_column]],
+            y=self.df[["SMA_Short_Window"]],
             legend_label="Short Window",
         )
         plot.line(
             x=self.df.index,
-            y=self.df[[self.long_window_column]],
+            y=self.df[["SMA_Long_Window"]],
             legend_label="Long Window",
         )
         return plot
@@ -228,9 +226,6 @@ class RSITradingStrategy(TradingStrategy):
     name = "Relative Strength Index"
     strategy = "RSI"
     features = [
-        "Close",
-        "Positive_Returns",
-        "Negative_Returns",
         "Positive_RS",
         "Negative_RS",
     ]
@@ -273,7 +268,6 @@ class ATRTradingStrategy(TradingStrategy):
     strategy = "ATR"
     features = [
         "Close",
-        "TR",
         "ATR",
     ]
 
@@ -304,13 +298,8 @@ class StochasticOscillatorTradingStrategy(TradingStrategy):
     name = "Stochastic Oscillator"
     strategy = "SO"
     features = [
-        "Close",
         "%K",
         "%D",
-        "Long Signal",
-        "Short Signal",
-        "Low",
-        "High",
     ]
 
     def __init__(self, *args, **kwargs):
@@ -341,13 +330,8 @@ class MovingAverageConvergenceDivergenceTradingStrategy(TradingStrategy):
     name = "Moving Average Convergence Divergence"
     strategy = "MACD"
     features = [
-        "Close",
-        "Short EMA",
-        "Long EMA",
-        "Long Signal",
-        "Short Signal",
-        "Signal Line",
-        "MACD Hisotgram",
+        "MACD",
+        "Signal_Line",
     ]
 
     def __init__(self, *args, **kwargs):

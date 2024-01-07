@@ -29,6 +29,13 @@ def train_trading_model(trading_model):
     # Clean the data for training
     df = strategy.df.dropna()
 
+    # Get the name of the action column
+    y_column_name = f"{strategy.strategy}_Action"
+    y = df[y_column_name]
+
+    # Drop columns that are not features
+    df = df[strategy.features]
+
     # get X_train and y_train
     # Get the length for training data size
     train_start = df.index[0]
@@ -38,12 +45,9 @@ def train_trading_model(trading_model):
     train_end_date = train_start + DateOffset(months=train_months)
 
     # Get the training dataframe
-    train = df[:train_end_date]
+    X_train = df[:train_end_date]
 
-    # Get the name of the action column
-    y_column = f"{strategy.strategy}_Action"
-    y_train = train[y_column]
-    X_train = train.drop(columns=[y_column])
+    y_train = y[:train_end_date]
 
     # Get the model class
     model_class = ML_MODELS.get(trading_model.ml_model)
