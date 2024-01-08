@@ -36,10 +36,14 @@ ML_MODELS = {
 
 
 def backtest_strategy(trading_model):
-    strategy = backtest(trading_model.strategy, trading_model.symbol, trading_model.period)
-    trading_model.strategy_returns = strategy.df.iloc[-1]["Strategy_Cumulative_Returns"]
-    trading_model.symbol_returns = strategy.df.iloc[-1]["Stock_Cumulative_Returns"]
-    trading_model.save()
+    try:
+        strategy = backtest(trading_model.strategy, trading_model.symbol, trading_model.period)
+        trading_model.strategy_returns = strategy.df.iloc[-1]["Strategy_Cumulative_Returns"]
+        trading_model.symbol_returns = strategy.df.iloc[-1]["Stock_Cumulative_Returns"]
+        trading_model.save()
+    except Exception:
+        log.exception("Shrug")
+        pass
 
 
 def backtest_model(trading_model):
