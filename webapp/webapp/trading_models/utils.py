@@ -1,11 +1,16 @@
 import logging
 
+import pandas as pd
+from sklearn.model_selection import GridSearchCV
 from dateutil.relativedelta import relativedelta
 from pandas.tseries.offsets import DateOffset
 
 from backtesting.utils import backtest
-from .ml_models import train_logistic_regression, train_svc, train_random_forest_classifier
-
+from .ml_models import (
+    get_logistic_regression,
+    get_svc,
+    get_random_forest_classifier
+)
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
@@ -18,9 +23,9 @@ ML_MODEL_CHOICES = [
 ]
 
 ML_MODELS = {
-    "logistic_regression": train_logistic_regression,
-    "svc": train_svc,
-    "rfc": train_random_forest_classifier,
+    "logistic_regression": get_logistic_regression,
+    "svc": get_svc,
+    "rfc": get_random_forest_classifier,
 }
 
 
@@ -54,8 +59,21 @@ def train_trading_model(trading_model):
     # Get the model class
     model_class = ML_MODELS.get(trading_model.ml_model)
 
-    # Instantiate the model with the X and y train data
-    model_instance = model_class(X_train, y_train)
+    # Instantiate the model and get the parameters
+    model, parameters = model_class()
+    log.critical(f"all paramters: {parameters}")
 
-    # Save the model and its score
-    log.critical(f"{trading_model.symbol} {trading_model.strategy} Training Data Score: {model_instance.score(X_train, y_train)}")
+    # Grid search the model
+    gs = GridSearchCV(model, parameters)
+    gs.fit(X_train, y_train)
+
+    # Get grid search results
+    results = pd.DataFrame(gs.cv_results_)
+    # order by rank_test_score
+    sorted = results.sort_values('rank_test_score')
+    params = sorted.loc[sorted.index[0]]["params"]
+    log.critical(f"optimal paramters: {params}")
+
+    # Save the optimal parameters
+    trading_model.optimal_parameters = params
+    trading_model.save()

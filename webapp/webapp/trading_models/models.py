@@ -28,6 +28,7 @@ class TradingModel(models.Model):
     period = models.CharField(default=max_period, max_length=3)
 
     # Outcome
+    optimal_parameters = models.JSONField()
     accuracy = models.FloatField(null=True, blank=True)
     precision_buy = models.FloatField(null=True, blank=True)
     recall_buy = models.FloatField(null=True, blank=True)
