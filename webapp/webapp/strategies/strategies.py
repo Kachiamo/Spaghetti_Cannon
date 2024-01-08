@@ -358,7 +358,8 @@ class MovingAverageConvergenceDivergenceTradingStrategy(TradingStrategy):
         )
         self.add_position_and_returns()
 
-        class BollingerBandsTradingStrategy(TradingStrategy):
+
+class BollingerBandsTradingStrategy(TradingStrategy):
     id = "bb"
     name = "Bollinger Bands"
     strategy = "BB"
@@ -373,16 +374,18 @@ class MovingAverageConvergenceDivergenceTradingStrategy(TradingStrategy):
         super(BollingerBandsTradingStrategy, self).__init__()
         self.df = args[0]
         self.ticker = kwargs.get("ticker")
+        self.window = kwargs.get("window", 40)
+        self.std_devs = kwargs.get("std_devs", 2)
         self.add_signals()
 
     def add_signals(self):
-        self.df['BB_MIDDLE'] = self.df['Close'].rolling(window=window).mean()
-        self.df['BB_LOWER'] = self.df['BB_MIDDLE'] + (self.df['Close'].rolling(window=window).std() * num_std_dev)
-        self.df['BB_MIDDLE'] = self.df['BB_MIDDLE'] - (self.df['Close'].rolling(window=window).std() * num_std_dev)
-        self.df[f"{self.strategy}_Action"][self.df['Close'] < self.df['BB_LOWER']] 
-        self.df[f"{self.strategy}_Action"][self.df['Close'] > self.df['BB_UPPER']]
-        self.df['buy_signal'] = np.where(self.df['Close'] < self.df['BB_LOWER'], 1, 0)
-        self.df['sell_signal'] = np.where(self.df['Close'] > self.df['BB_UPPER'], -1, 0
+        self.df['BB_MIDDLE'] = self.df['Close'].rolling(window=self.window).mean()
+        self.df['BB_UPPER'] = self.df['BB_MIDDLE'] + (self.df['Close'].rolling(window=self.window).std() * self.std_devs)
+        self.df['BB_LOWER'] = self.df['BB_MIDDLE'] - (self.df['Close'].rolling(window=self.window).std() * self.std_devs)
+        self.df[f"{self.strategy}_Action"] = np.where(
+            self.df['Close'] < self.df['BB_LOWER'], 1, np.where(
+                self.df['Close'] > self.df['BB_UPPER'], -1, 0
             )
+        )
     
         self.add_position_and_returns()
