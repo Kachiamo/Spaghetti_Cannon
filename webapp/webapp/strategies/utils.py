@@ -11,6 +11,15 @@ from .strategies import (
 
 
 STRATEGIES = {
+    SMATradingStrategy.id: SMATradingStrategy,
+    RSITradingStrategy.id: RSITradingStrategy,
+    ATRTradingStrategy.id: ATRTradingStrategy,
+    StochasticOscillatorTradingStrategy.id: StochasticOscillatorTradingStrategy,
+    MovingAverageConvergenceDivergenceTradingStrategy. id: MovingAverageConvergenceDivergenceTradingStrategy,
+    BollingerBandsTradingStrategy.id: BollingerBandsTradingStrategy,
+}
+
+ALL_STRATEGIES = {
     BuyHoldTradingStrategy.id: BuyHoldTradingStrategy,
     DCATradingStrategy.id: DCATradingStrategy,
     SMATradingStrategy.id: SMATradingStrategy,
