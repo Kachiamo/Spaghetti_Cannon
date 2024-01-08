@@ -83,8 +83,18 @@ def train_trading_model(trading_model):
 
     report = classification_report(y_test, predictions, zero_division=1)
     log.critical(report)
-    precision_sell, precision_hold, precision_buy = precision
-    recall_sell, recall_hold, recall_buy = recall
+
+    try:
+        precision_sell, precision_hold, precision_buy = precision
+        recall_sell, recall_hold, recall_buy = recall
+    except Exception:
+        # Some strategies have no hold...
+        # only buy/sell
+        precision_hold = 0
+        recall_hold = 0
+        precision_sell, precision_buy = precision
+        recall_sell, recall_buy = recall
+
     # Save the optimal parameters, accuracy, recall, and precision
     trading_model.optimal_parameters = gs.best_params_
     trading_model.accuracy = accuracy_score(y_test, predictions)
