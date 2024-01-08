@@ -1,6 +1,12 @@
 import logging
 
 import pandas as pd
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    precision_score,
+    recall_score,
+)
 from sklearn.model_selection import GridSearchCV
 from dateutil.relativedelta import relativedelta
 from pandas.tseries.offsets import DateOffset
@@ -53,8 +59,9 @@ def train_trading_model(trading_model):
 
     # Get the training dataframe
     X_train = df[:train_end_date]
-
     y_train = y[:train_end_date]
+    X_test = df[train_end_date:]
+    y_test = y[train_end_date:]
 
     # Get the model class
     model_class = ML_MODELS.get(trading_model.ml_model)
@@ -66,14 +73,25 @@ def train_trading_model(trading_model):
     # Grid search the model
     gs = GridSearchCV(model, parameters)
     gs.fit(X_train, y_train)
+    best_model = gs.best_estimator_
+    log.critical(f'best_model {best_model}')
 
-    # Get grid search results
-    results = pd.DataFrame(gs.cv_results_)
-    # order by rank_test_score
-    sorted = results.sort_values('rank_test_score')
-    params = sorted.loc[sorted.index[0]]["params"]
-    log.critical(f"optimal paramters: {params}")
+    predictions = best_model.predict(X_test)
+    precision = precision_score(y_test, predictions, average=None)
+    recall = recall_score(y_test, predictions, average=None)
+    log.critical(f"precision {precision} recall {recall}")
 
-    # Save the optimal parameters
-    trading_model.optimal_parameters = params
+    report = classification_report(y_test, predictions, zero_division=1)
+    log.critical(report)
+    precision_sell, precision_hold, precision_buy = precision
+    recall_sell, recall_hold, recall_buy = recall
+    # Save the optimal parameters, accuracy, recall, and precision
+    trading_model.optimal_parameters = gs.best_params_
+    trading_model.accuracy = accuracy_score(y_test, predictions)
+    trading_model.precision_buy = precision_buy
+    trading_model.precision_sell = precision_sell
+    trading_model.precision_hold = precision_hold
+    trading_model.recall_buy = recall_buy
+    trading_model.recall_sell = recall_sell
+    trading_model.recall_hold = recall_hold
     trading_model.save()
