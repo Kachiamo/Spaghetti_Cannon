@@ -6,6 +6,7 @@ from .strategies import (
     ATRTradingStrategy,
     StochasticOscillatorTradingStrategy,
     MovingAverageConvergenceDivergenceTradingStrategy,
+    BollingerBandsTradingStrategy,
 )
 
 
@@ -17,6 +18,7 @@ STRATEGIES = {
     ATRTradingStrategy.id: ATRTradingStrategy,
     StochasticOscillatorTradingStrategy.id: StochasticOscillatorTradingStrategy,
     MovingAverageConvergenceDivergenceTradingStrategy. id: MovingAverageConvergenceDivergenceTradingStrategy,
+    BollingerBandsTradingStrategy.id: BollingerBandsTradingStrategy,
 }
 
 STRATEGY_CHOICES = [
@@ -27,4 +29,5 @@ STRATEGY_CHOICES = [
     (ATRTradingStrategy.id, ATRTradingStrategy.name),
     (StochasticOscillatorTradingStrategy.id, StochasticOscillatorTradingStrategy.name),
     (MovingAverageConvergenceDivergenceTradingStrategy.id, MovingAverageConvergenceDivergenceTradingStrategy.name),
+    (BollingerBandsTradingStrategy.id, BollingerBandsTradingStrategy.name)
 ]
