@@ -5,7 +5,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from django_filters import rest_framework as drf_filters
 
-from .utils import train_trading_model
+from .utils import train_trading_model, backtest_strategy, backtest_model
 from .import serializers, models, filters
 
 
@@ -39,4 +39,38 @@ class TrainTradingModel(generics.RetrieveUpdateAPIView):
     def update(self, request, *args, **kwargs):
         trading_model = self.get_object()
         train_trading_model(trading_model)
+        return Response(None, status.HTTP_200_OK)
+
+
+class BacktestStrategy(generics.RetrieveUpdateAPIView):
+    permission_classes = []
+    authentication_classes = []
+    queryset = models.TradingModel.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return serializers.TradingModel
+        else:
+            return serializers.TrainSerializer
+
+    def update(self, request, *args, **kwargs):
+        trading_model = self.get_object()
+        backtest_strategy(trading_model)
+        return Response(None, status.HTTP_200_OK)
+
+
+class BacktestModel(generics.RetrieveUpdateAPIView):
+    permission_classes = []
+    authentication_classes = []
+    queryset = models.TradingModel.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return serializers.TradingModel
+        else:
+            return serializers.TrainSerializer
+
+    def update(self, request, *args, **kwargs):
+        trading_model = self.get_object()
+        backtest_model(trading_model)
         return Response(None, status.HTTP_200_OK)

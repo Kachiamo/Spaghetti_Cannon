@@ -27,6 +27,11 @@ class TradingModel(models.Model):
     training_percent = models.FloatField(default=default_training_percent)
     period = models.CharField(default=max_period, max_length=3)
 
+    # Returns
+    symbol_returns = models.FloatField(null=True, blank=True)
+    strategy_returns = models.FloatField(null=True, blank=True)
+    model_returns = models.FloatField(null=True, blank=True)
+
     # Outcome
     optimal_parameters = models.JSONField()
     accuracy = models.FloatField(null=True, blank=True)

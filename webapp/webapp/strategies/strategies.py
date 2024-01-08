@@ -33,45 +33,71 @@ class TradingStrategy():
         pass
 
     def add_position_and_returns(self):
-        # Compute Daily Returns and Cumulative Daily Returns
-        self.df["Daily_Returns"] = self.df["Close"].pct_change()
-        self.df["Cumulative_Daily_Returns"] = (self.df["Daily_Returns"] + 1).cumprod()
-
         # Compute Position
+        self.df["Cash"] = 0.0
         self.df["{self.strategy}_Position"] = 0
         # Compute Position Returns
         current_position = 0
+        current_cash = self.df.loc[self.df.index[0], "Close"]
         for index, row in self.df.iterrows():
+            # Get the current action
+            close = row["Close"]
             action = row[f"{self.strategy}_Action"]
             action = action if not math.isnan(action) else 0
-            current_position = min(max(current_position + action, 0), self.max_position)
+
+            # Take the action if possible
+            if action > 0:
+                if action + current_position < self.max_position:
+                    current_position += action
+                    current_cash -= action*close
+                else:
+                    action = 0
+            elif action < 0:
+                if action + current_position >= 0:
+                    current_position += action
+                    current_cash += -action*close
+                else:
+                    action = 0
+
+            # Update enabled and position
             self.df.loc[index, f"{self.strategy}_Enabled"] = min(current_position, 1)
             self.df.loc[index, f"{self.strategy}_Position"] = current_position
-        self.df[f"{self.ticker}_Cost"] = self.df["Close"] * self.df[f"{self.strategy}_Action"]
-        self.df[f"{self.ticker}_Cummulative_Cost"] = self.df[f"{self.ticker}_Cost"].cumsum()
+            self.df.loc[index, "Cash"] = current_cash
+
+        # Compute Holdings
         self.df[f"{self.ticker}_Holdings"] = self.df["Close"] * self.df[f"{self.strategy}_Position"]
-        self.df[f"{self.ticker}_Profits"] = self.df[f"{self.ticker}_Holdings"] - self.df[f"{self.ticker}_Cummulative_Cost"]
-        self.df[f"{self.strategy}_Daily_Returns"] = self.df["Daily_Returns"] * self.df[f"{self.strategy}_Enabled"]
-        self.df[f"{self.strategy}_Cumulative_Daily_Returns"] = (self.df[f"{self.strategy}_Daily_Returns"] + 1).cumprod()
+
+        # Compute Profit
+        self.df["Daily_Stock_Value"] = self.df["Close"]
+        self.df["Daily_Strategy_Value"] = self.df[f"{self.ticker}_Holdings"] + self.df["Cash"]
+
+        # Compute Returns
+        self.df["Daily_Stock_Returns"] = self.df["Daily_Stock_Value"].pct_change()
+        self.df["Daily_Strategy_Returns"] = self.df["Daily_Strategy_Value"].pct_change()
+
+        # Compute Cumulative Daily Returns
+        self.df["Stock_Cumulative_Returns"] = (self.df["Daily_Stock_Returns"] + 1).cumprod()
+        self.df["Strategy_Cumulative_Returns"] = (self.df["Daily_Strategy_Returns"] + 1).cumprod()
+
 
     def plot_returns(self):
         plot = figure(x_range=(self.df.index[0], self.df.index[-1]), frame_width=1024, frame_height=768)
         plot.line(
             x=self.df.index,
-            y=self.df[["Cumulative_Daily_Returns"]],
-            legend_label="Cumulative Daily Returns",
+            y=self.df[["Stock_Cumulative_Returns"]],
+            legend_label="Stock Cumulative Returns",
             color="blue",
         )
         plot.line(
             x=self.df.index,
-            y=self.df[[f"{self.strategy}_Cumulative_Daily_Returns"]],
-            legend_label=f"{self.strategy} Cumulative Daily Returns",
+            y=self.df[["Strategy_Cumulative_Returns"]],
+            legend_label="Strategy Cumulative Returns",
             color=COLOR_BUY,
         )
         plot.line(
             x=self.df.index,
-            y=self.df[[f"{self.strategy}_Enabled"]],
-            legend_label="Strategy Enabled",
+            y=self.df[[f"{self.strategy}_Position"]],
+            legend_label="Strategy Position",
             color="black",
         )
         return plot
@@ -80,20 +106,14 @@ class TradingStrategy():
         plot = figure(x_range=(self.df.index[0], self.df.index[-1]), frame_width=1024, frame_height=768)
         plot.line(
             x=self.df.index,
-            y=self.df[[f"{self.ticker}_Holdings"]],
-            legend_label=f"{self.ticker} Holdings",
-            color="black",
+            y=self.df[["Daily_Stock_Value"]],
+            legend_label="Daily Stock Value",
+            color="blue",
         )
         plot.line(
             x=self.df.index,
-            y=self.df[[f"{self.ticker}_Cummulative_Cost"]],
-            legend_label=f"{self.ticker} Cummulative Cost",
-            color="red",
-        )
-        plot.line(
-            x=self.df.index,
-            y=self.df[[f"{self.ticker}_Profits"]],
-            legend_label=f"{self.ticker} Profits",
+            y=self.df[["Daily_Strategy_Value"]],
+            legend_label="Daily Strategy Value",
             color="green",
         )
         return plot
@@ -353,7 +373,7 @@ class MovingAverageConvergenceDivergenceTradingStrategy(TradingStrategy):
         self.df['Short Signal'] = self.df['MACD'] < self.df['Signal_Line']
         self.df[f"{self.strategy}_Action"] = np.where(
             self.df['Short Signal'], -1, np.where(
-                self.df['Long Signal'], 1,0
+                self.df['Long Signal'], 1, 0
             )
         )
         self.add_position_and_returns()
