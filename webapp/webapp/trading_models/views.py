@@ -4,6 +4,7 @@ from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.response import Response
 from django_filters import rest_framework as drf_filters
+from rest_framework.filters import OrderingFilter
 
 from .utils import train_trading_model, backtest_strategy, backtest_model
 from .import serializers, models, filters
@@ -15,7 +16,8 @@ class TradingModels(generics.ListCreateAPIView):
     serializer_class = serializers.TradingModel
     queryset = models.TradingModel.objects.all()
     filterset_class = filters.TradingModelFilter
-    filter_backends = (drf_filters.DjangoFilterBackend,)
+    filter_backends = [drf_filters.DjangoFilterBackend, OrderingFilter, ]
+    ordering_fields = ['symbol', 'strategy', 'ml_model', 'period', 'symbol_returns', 'strategy_returns', 'model_returns', 'accuracy']
 
 
 class TradingModel(generics.RetrieveUpdateDestroyAPIView):
