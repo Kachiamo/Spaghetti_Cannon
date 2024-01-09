@@ -1,6 +1,8 @@
 import logging
 
 import pandas as pd
+from pathlib import Path
+import pickle
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
@@ -90,6 +92,11 @@ def train_trading_model(trading_model):
     gs.fit(X_train, y_train)
     best_model = gs.best_estimator_
     log.critical(f'best_model {best_model}')
+    path = Path(f"trained_models/{trading_model.uuid}.pickle")
+    pickled_model = pickle.dumps(best_model)
+    with open(path, "wb") as binary_file:
+        # Write bytes to file
+        binary_file.write(pickled_model)
 
     predictions = best_model.predict(X_test)
     precision = precision_score(y_test, predictions, average=None)
