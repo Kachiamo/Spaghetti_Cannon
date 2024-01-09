@@ -30,6 +30,7 @@ XOM.csv-----> exxon data
 <img src="/Pictures/Hist.png"  width="500" height="300">
 <img src="/Pictures/Precision_2.png"  width="500" height="300">
 <img src="/Pictures/sigline.png"  width="500" height="300">
+
 ## Conclusion/Next Steps
 
 ### Overall Project Guideline Checklist
