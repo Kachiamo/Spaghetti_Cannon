@@ -101,7 +101,7 @@ def train_trading_model(trading_model):
         binary_file.write(pickled_model)
 
     # Compute the model returns
-    strategy.df[y_column_name] = best_model.predict(strategy.df[strategy.features])
+    strategy.df[y_column_name] = best_model.predict(strategy.df[strategy.features].fillna(0))
     strategy.add_position_and_returns()
     trading_model.model_returns = strategy.df.iloc[-1]["Strategy_Cumulative_Returns"]
 
