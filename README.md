@@ -18,29 +18,29 @@ Machine Learning (Predictive): Use models and the trading strategies to determin
 
 ## Files
 Our csv files were taken from yahoo finance.
-AAPL.csv----> Apple data
-AMZN.csv----> Amazon data
-LLY.csv-----> Eli Lily
-META.csv----> Meta data
-TSLA.csv----> Tesla data
+AAPL.csv----> Apple data/
+AMZN.csv----> Amazon data/
+LLY.csv-----> Eli Lily/
+META.csv----> Meta data/
+TSLA.csv----> Tesla data/
 XOM.csv-----> Exxon data
 
 ## Visuals
-<img src="/Pictures/Cloose.png"  width="500" height="300">
 <img src="/Pictures/Close.png"  width="500" height="300">
+<img src="/Pictures/Cloose.png"  width="500" height="300">
 <img src="/Pictures/sigline.png"  width="500" height="300">
 <img src="/Pictures/Hist.png"  width="500" height="300">
 <img src="/Pictures/Precision_2.png"  width="500" height="300">
 
 ## Next Steps
-Include Quarterly Earnings reports
-Incorporate Risk Range Tool
+Include Quarterly Earnings reports/
+Incorporate Risk Range Tool/
 Include SEC Filings
 
 ### Overall Project Guideline Checklist
-Data collection
-Signals application
-Training Models
+Data collection/
+Signals application/
+Training Models/
 Prediction
 
 ### Conclusion
