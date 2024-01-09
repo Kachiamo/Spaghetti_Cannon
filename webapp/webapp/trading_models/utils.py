@@ -1,6 +1,8 @@
 import logging
 
 import pandas as pd
+from pathlib import Path
+import pickle
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
@@ -91,6 +93,19 @@ def train_trading_model(trading_model):
     best_model = gs.best_estimator_
     log.critical(f'best_model {best_model}')
 
+    # Write the model to disk
+    path = Path(f"trained_models/{trading_model.uuid}.pickle")
+    pickled_model = pickle.dumps(best_model)
+    with open(path, "wb") as binary_file:
+        # Write bytes to file
+        binary_file.write(pickled_model)
+
+    # Compute the model returns
+    strategy.df[y_column_name] = best_model.predict(strategy.df[strategy.features].fillna(0))
+    strategy.add_position_and_returns()
+    trading_model.model_returns = strategy.df.iloc[-1]["Strategy_Cumulative_Returns"]
+
+    # Get model predictions
     predictions = best_model.predict(X_test)
     precision = precision_score(y_test, predictions, average=None)
     recall = recall_score(y_test, predictions, average=None)
