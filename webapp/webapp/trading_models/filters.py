@@ -13,4 +13,4 @@ class TradingModelFilter(filters.FilterSet):
 
     class Meta:
         model = TradingModel
-        fields = ['symbol', 'strategy', 'ml_model', 'period']
+        fields = ['symbol', 'strategy', 'ml_model', 'period', 'model_returns', 'skip']

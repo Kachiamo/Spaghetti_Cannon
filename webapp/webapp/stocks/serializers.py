@@ -8,3 +8,7 @@ class Stock(serializers.ModelSerializer):
     class Meta:
         model = models.Stock
         fields = '__all__'
+
+
+class UpdateHistorySerializer(serializers.Serializer):
+    pass

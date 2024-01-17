@@ -11,7 +11,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         optimal_parameters = {}
         training_percent = 0.3
-        period = "10y"
+        period = "1y"
 
         file_name = "trading_models/management/commands/sp500.csv"
         with open(file_name) as csvfile:

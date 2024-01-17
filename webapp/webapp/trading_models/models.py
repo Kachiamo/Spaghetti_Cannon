@@ -26,6 +26,7 @@ class TradingModel(models.Model):
     ml_model = models.CharField(max_length=255)
     training_percent = models.FloatField(default=default_training_percent)
     period = models.CharField(default=max_period, max_length=3)
+    skip = models.BooleanField(default=False)
 
     # Returns
     symbol_returns = models.FloatField(null=True, blank=True)

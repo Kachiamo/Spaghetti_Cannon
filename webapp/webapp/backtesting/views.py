@@ -24,6 +24,7 @@ class Backtest(generics.CreateAPIView):
 
         # Get the trading strategy to backtest
         strategy = backtest(data["strategy_id"], data["symbol"], data["period"])
+        strategy.add_position_and_returns(max_position=data["max_position"])
 
         # Get the bokeh components to render
         strategy_script, strategy_div = components(strategy.plot())
@@ -31,6 +32,9 @@ class Backtest(generics.CreateAPIView):
         holdings_script, holdings_div = components(strategy.plot_holdings())
         kwargs = {
             "strategy": strategy,
+            "period": data["period"],
+            "strategy_returns": strategy.df.iloc[-1]["Strategy_Cumulative_Returns"],
+            "stock_returns": strategy.df.iloc[-1]["Stock_Cumulative_Returns"],
             "plots": {
                 "strategy": {
                     "script": strategy_script,

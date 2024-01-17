@@ -9,3 +9,4 @@ class BacktestingSerializer(serializers.Serializer):
     strategy_id = serializers.ChoiceField(choices=STRATEGY_CHOICES)
     symbol = serializers.ChoiceField(choices=symbol_choices())
     period = serializers.ChoiceField(choices=PERIOD_CHOICES)
+    max_position = serializers.IntegerField()
