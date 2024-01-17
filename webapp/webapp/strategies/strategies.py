@@ -31,6 +31,9 @@ class TradingStrategy():
     def add_signals(self):
         pass
 
+    def get_action(self):
+        return self.df.loc[self.df.index[-1], f"{self.strategy}_Action"]
+
     def add_position_and_returns(self, max_position=sys.maxsize):
         # Compute Position
         self.df["Cash"] = 0.0

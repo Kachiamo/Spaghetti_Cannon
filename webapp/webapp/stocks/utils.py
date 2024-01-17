@@ -50,20 +50,21 @@ def update_history(symbol):
     log.critical(f"path {path}")
     ticker = yf.Ticker(symbol)
     if os.path.isfile(path):
-        history = pd.read_csv(
-            path,
-            index_col='Date',
-            parse_dates=True
-        )
         try:
+            history = pd.read_csv(
+                path,
+                index_col='Date',
+                parse_dates=True
+            )
             last_index = history.index[-1]
             start_date = last_index + timedelta(days=1)
-            end_date = datetime.now()
+            end_date = datetime.utcnow().replace(tzinfo=pytz.utc) + timedelta(days=1)
             if start_date > end_date:
                 return
             stock_data = ticker.history(start=start_date, end=end_date)
             history = pd.concat([history, stock_data])
         except Exception:
+            log.exception(f"Failed to get history for {symbol}")
             pass
 
     if history is None:
