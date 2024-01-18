@@ -7,6 +7,8 @@ from .strategies import (
     StochasticOscillatorTradingStrategy,
     MovingAverageConvergenceDivergenceTradingStrategy,
     BollingerBandsTradingStrategy,
+    VelocityTradingStrategy,
+    ShrugTradingStrategy,
 )
 
 
@@ -19,6 +21,8 @@ STRATEGIES = {
     StochasticOscillatorTradingStrategy.id: StochasticOscillatorTradingStrategy,
     MovingAverageConvergenceDivergenceTradingStrategy. id: MovingAverageConvergenceDivergenceTradingStrategy,
     BollingerBandsTradingStrategy.id: BollingerBandsTradingStrategy,
+    VelocityTradingStrategy.id: VelocityTradingStrategy,
+    ShrugTradingStrategy.id: ShrugTradingStrategy,
 }
 
 
@@ -30,5 +34,7 @@ STRATEGY_CHOICES = [
     (ATRTradingStrategy.id, ATRTradingStrategy.name),
     (StochasticOscillatorTradingStrategy.id, StochasticOscillatorTradingStrategy.name),
     (MovingAverageConvergenceDivergenceTradingStrategy.id, MovingAverageConvergenceDivergenceTradingStrategy.name),
-    (BollingerBandsTradingStrategy.id, BollingerBandsTradingStrategy.name)
+    (BollingerBandsTradingStrategy.id, BollingerBandsTradingStrategy.name),
+    (VelocityTradingStrategy.id, VelocityTradingStrategy.name),
+    (ShrugTradingStrategy.id, ShrugTradingStrategy.name),
 ]

@@ -1,5 +1,5 @@
 import logging
-import yfinance as yf
+from stocks.utils import get_history
 
 from strategies.utils import STRATEGIES
 
@@ -21,6 +21,5 @@ PERIOD_CHOICES = {
 
 def backtest(strategy_id, symbol, period):
     strategy_class = STRATEGIES[strategy_id]
-    ticker = yf.Ticker(symbol)
-    history = ticker.history(period=period)
+    history = get_history(symbol, period=period)
     return strategy_class(history, ticker=symbol)

@@ -167,3 +167,7 @@ docker-compose.override.yml
 
 # Pickled Models
 *.pickle
+
+webapp/webapp/stock_data/*.csv
+
+.code-workspace

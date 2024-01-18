@@ -27,18 +27,23 @@ class TradingStrategy():
     strategy = "Strategy Abbreviation"
     df = None
     ticker = None
-    max_position = sys.maxsize
 
     def add_signals(self):
         pass
 
-    def add_position_and_returns(self):
+    def get_action(self):
+        return self.df.loc[self.df.index[-1], f"{self.strategy}_Action"]
+
+    def add_position_and_returns(self, max_position=sys.maxsize):
         # Compute Position
         self.df["Cash"] = 0.0
+        self.df["Additional Cash"] = 0.0
         self.df["{self.strategy}_Position"] = 0
         # Compute Position Returns
         current_position = 0
         current_cash = self.df.loc[self.df.index[0], "Close"]
+        previous_position = 0
+        additional_cash = 0
         for index, row in self.df.iterrows():
             # Get the current action
             close = row["Close"]
@@ -47,8 +52,11 @@ class TradingStrategy():
 
             # Take the action if possible
             if action > 0:
-                if action + current_position < self.max_position:
+                if action + current_position <= max_position:
                     current_position += action
+                    delta = action*close
+                    if delta > current_cash:
+                        additional_cash += delta - max(current_cash, 0)
                     current_cash -= action*close
                 else:
                     action = 0
@@ -63,6 +71,7 @@ class TradingStrategy():
             self.df.loc[index, f"{self.strategy}_Enabled"] = min(current_position, 1)
             self.df.loc[index, f"{self.strategy}_Position"] = current_position
             self.df.loc[index, "Cash"] = current_cash
+            self.df.loc[index, "Additional Cash"] = additional_cash
 
         # Compute Holdings
         self.df[f"{self.ticker}_Holdings"] = self.df["Close"] * self.df[f"{self.strategy}_Position"]
@@ -116,6 +125,12 @@ class TradingStrategy():
             legend_label="Daily Strategy Value",
             color="green",
         )
+        plot.line(
+            x=self.df.index,
+            y=self.df[["Additional Cash"]],
+            legend_label="Additional Cash",
+            color="red",
+        )
         return plot
 
     def plot(self):
@@ -137,6 +152,13 @@ class TradingStrategy():
             color=COLOR_SELL,
             size=20,
         )
+        if "Floor" in self.df.columns:
+            plot.line(
+                x=self.df.index,
+                y=self.df[["Floor"]],
+                legend_label="Floor",
+                color="red",
+            )
         return plot
 
 
@@ -157,7 +179,6 @@ class BuyHoldTradingStrategy(TradingStrategy):
         self.df[f"{self.strategy}_Signal"] = 1.0
         self.df[f"{self.strategy}_Action"] = self.df[f"{self.strategy}_Signal"].diff()
         self.df.loc[self.df.index[0], f"{self.strategy}_Action"] = 1.0
-        self.add_position_and_returns()
 
 
 class DCATradingStrategy(TradingStrategy):
@@ -198,7 +219,6 @@ class DCATradingStrategy(TradingStrategy):
                 dt = df_for_year.index[i]
                 self.df.loc[dt, f"{self.strategy}_Action"] = 1.0
                 i += period
-        self.add_position_and_returns()
 
 
 class SMATradingStrategy(TradingStrategy):
@@ -224,7 +244,6 @@ class SMATradingStrategy(TradingStrategy):
             self.df["SMA_Short_Window"][self.short_window:] > self.df["SMA_Long_Window"][self.short_window:], 1.0, 0.0
         )
         self.df["SMA_Action"] = self.df["SMA_Signal"].diff()
-        self.add_position_and_returns()
 
     def plot(self):
         plot = super(SMATradingStrategy, self).plot()
@@ -279,7 +298,6 @@ class RSITradingStrategy(TradingStrategy):
                 self.df[f"{self.strategy}_Signal"] <= self.under_sold, 1, 0
             )
         )
-        self.add_position_and_returns()
 
 
 class ATRTradingStrategy(TradingStrategy):
@@ -310,7 +328,6 @@ class ATRTradingStrategy(TradingStrategy):
                 self.df['Close'] + self.atr_multiplier * self.df['ATR'] < self.df['Close'].shift(1), -1.0, 0.0
             )
         )
-        self.add_position_and_returns()
 
 
 class StochasticOscillatorTradingStrategy(TradingStrategy):
@@ -342,7 +359,6 @@ class StochasticOscillatorTradingStrategy(TradingStrategy):
                 self.df['Long Signal'], 1, 0
             )
         )
-        self.add_position_and_returns()
 
     
 class MovingAverageConvergenceDivergenceTradingStrategy(TradingStrategy):
@@ -376,7 +392,6 @@ class MovingAverageConvergenceDivergenceTradingStrategy(TradingStrategy):
                 self.df['Long Signal'], 1, 0
             )
         )
-        self.add_position_and_returns()
 
 
 class BollingerBandsTradingStrategy(TradingStrategy):
@@ -407,5 +422,108 @@ class BollingerBandsTradingStrategy(TradingStrategy):
                 self.df['Close'] > self.df['BB_UPPER'], -1, 0
             )
         )
-    
-        self.add_position_and_returns()
+
+
+class VelocityTradingStrategy(TradingStrategy):
+    id = "v"
+    name = "Velocity"
+    strategy = "V"
+    features = [
+        "Velocity",
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(VelocityTradingStrategy, self).__init__()
+        self.df = args[0]
+        self.ticker = kwargs.get("ticker")
+        self.add_signals()
+
+    def add_signals(self):
+        self.df["Velocity"] = (self.df["Low"] - 0.5*self.df["Low"].std()).diff().rolling(window=21).mean()
+        self.df[f"{self.strategy}_Signal"] = np.where(
+            self.df["Velocity"] > 0, 1, np.where(
+                self.df["Velocity"] < 0, -1, 0
+            )
+        )
+        self.df[f"{self.strategy}_Action"] = np.where(
+            self.df["Velocity"] > 0, 1, np.where(
+                self.df["Velocity"] < 0, -1, 0
+            )
+        )
+
+
+class ShrugTradingStrategy(TradingStrategy):
+    id = "sh"
+    name = "Shrug"
+    strategy = "sh"
+    features = [
+        "Shrug",
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(ShrugTradingStrategy, self).__init__()
+        self.df = args[0]
+        self.ticker = kwargs.get("ticker")
+        self.window = kwargs.get("window", 42)
+        self.add_signals()
+
+    def add_signals(self):
+        self.df["Short Mean"] = self.df["Close"].rolling(window=round(0.5*self.window)).mean()
+        self.df["Short Mean Rolling Min"] = self.df["Short Mean"].rolling(window=self.window).min()
+        self.df["Short Mean Rolling Max"] = self.df["Short Mean"].rolling(window=self.window).max()
+        self.df["Short Mean Rolling Min Delta"] = self.df["Short Mean Rolling Min"].diff()
+        self.df["Short Mean Rolling Max Delta"] = self.df["Short Mean Rolling Max"].diff()
+
+        self.df["Long Mean"] = self.df["Close"].rolling(window=2*self.window).mean()
+        self.df["Long Mean Delta"] = self.df["Long Mean"].diff()
+        self.df["Short Mean Delta"] = self.df["Short Mean"].diff()
+
+        self.df["Upper Squeeze"] = self.df["Short Mean Rolling Max"] - self.df["Short Mean"]
+        self.df["Lower Squeeze"] = self.df["Short Mean"] - self.df["Short Mean Rolling Min"]
+        # So 3 signals:
+        # Short Mean Rolling Min Delta == 0
+        # Short Mean Rolling Max Delta == 0
+        # Long Mean Delta > 0
+        self.df["Min Signal"] = np.where(
+            self.df["Short Mean Rolling Min Delta"] == 0, 1, 0
+        )
+        self.df["Max Signal"] = np.where(
+            self.df["Short Mean Rolling Max Delta"] == 0, 1, 0
+        )
+        self.df["Long Mean Signal"] = np.where(
+            self.df["Long Mean Delta"] > 0, 1, 0
+        )
+        self.df["Short Mean Signal"] = np.where(
+            self.df["Short Mean Delta"] > 0, 1, 0
+        )
+        self.df["Close Below Short Mean"] = np.where(
+            self.df["Close"] < self.df["Short Mean"], 1 , 0
+        )
+        self.df["Close Above Short Mean"] = np.where(
+            self.df["Close"] > self.df["Short Mean"], 1 , 0
+        )
+        self.df["Close Below Long Mean"] = np.where(
+            self.df["Close"] < self.df["Long Mean"], 1 , 0
+        )
+        self.df["Close Above Long Mean"] = np.where(
+            self.df["Close"] > self.df["Long Mean"], 1 , 0
+        )
+        self.df["Close Below Short Mean Rolling Min"] = np.where(
+            self.df["Close"] < self.df["Short Mean Rolling Min"], 1 , 0
+        )
+        self.df["Close Above Short Mean Rolling Max"] = np.where(
+            self.df["Close"] > self.df["Short Mean Rolling Max"], 1 , 0
+        )
+        self.df["Upper Squeeze Sell"] = np.where(
+            self.df["Upper Squeeze"] < self.df["Lower Squeeze"], 1, 0
+        )
+        self.df["Lower Squeeze Buy"] = np.where(
+            self.df["Upper Squeeze"] > self.df["Lower Squeeze"], 1, 0
+        )
+        self.df["Buy Signal"] =  self.df["Min Signal"] * self.df["Close Below Short Mean"] * self.df["Close Below Long Mean"] * self.df["Close Below Short Mean Rolling Min"] * self.df["Lower Squeeze Buy"]
+        self.df["Sell Signal"] =  self.df["Max Signal"] * self.df["Close Above Short Mean"] * self.df["Close Above Long Mean"] * self.df["Close Above Short Mean Rolling Max"] * self.df["Upper Squeeze Sell"]
+        self.df["sh_Action"] = np.where(
+            self.df["Buy Signal"] == 1, 1, np.where(
+                self.df["Sell Signal"] == 1, -1, 0
+            )
+        )

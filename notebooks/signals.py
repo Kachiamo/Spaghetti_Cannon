@@ -179,3 +179,26 @@ class RSITradingStrategy(TradingStrategy):
                 self.df[f"{self.strategy}_Signal"] <= self.under_sold, 1, 0
             )
         )
+
+
+class VelocityTradingStrategy(TradingStrategy):
+    strategy = "Velocity"
+
+    def __init__(self, *args, **kwargs):
+        super(VelocityTradingStrategy, self).__init__()
+        self.df = args[0]
+        self.ticker = kwargs.get("ticker")
+        self.add_signals()
+
+    def add_signals(self):
+        self.df["derivative"] = (self.df["Low"] - 0.5*self.df["Low"].std()).diff().rolling(window=21).mean()
+        self.df[f"{self.strategy}_Signal"] = np.where(
+            self.df["derivative"] > 0, 1, np.where(
+                self.df["derivative"] < 0, -1, 0
+            )
+        )
+        self.df[f"{self.strategy}_Action"] = np.where(
+            self.df["derivative"] > 0, 1, np.where(
+                self.df["derivative"] < 0, -1, 0
+            )
+        )

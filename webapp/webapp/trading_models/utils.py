@@ -40,6 +40,7 @@ ML_MODELS = {
 def backtest_strategy(trading_model):
     try:
         strategy = backtest(trading_model.strategy, trading_model.symbol, trading_model.period)
+        strategy.add_position_and_returns()
         trading_model.strategy_returns = strategy.df.iloc[-1]["Strategy_Cumulative_Returns"]
         trading_model.symbol_returns = strategy.df.iloc[-1]["Stock_Cumulative_Returns"]
         trading_model.save()
