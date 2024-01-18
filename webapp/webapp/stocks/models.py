@@ -12,3 +12,4 @@ class Stock(models.Model):
     ipo_year = models.PositiveSmallIntegerField(blank=True, null=True)
     sector = models.CharField(max_length=255, blank=True, null=True)
     industry = models.CharField(max_length=255, blank=True, null=True)
+    tags = models.JSONField()
