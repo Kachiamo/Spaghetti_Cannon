@@ -28,12 +28,15 @@ class Action(APIView):
         buy = data["buy"]
         sell = data["sell"]
         hold = data["hold"]
-        tag = data["tag"]
+        tag = data.get("tag")
+        symbols = data.get("symbols")
 
         stocks = Stock.objects
         if tag and len(tag) > 0:
             stocks = stocks.filter(tags__contains=tag)
-        for stock in stocks:
+        if symbols and len(symbols) > 0:
+            stocks = stocks.filter(symbol__in=symbols)
+        for stock in stocks.all():
             log.critical(stock.symbol)
             # Get the trading strategy to backtest
             try:

@@ -10,4 +10,5 @@ class ActionSerializer(serializers.Serializer):
     buy = serializers.BooleanField()
     sell = serializers.BooleanField()
     hold = serializers.BooleanField()
-    tag = serializers.CharField()
+    tag = serializers.CharField(required=False)
+    symbols = serializers.ListField(child=serializers.CharField(), required=False)
