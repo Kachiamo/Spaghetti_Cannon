@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "backtesting",
     "trading_models",
     "stocks",
+    "action",
 ]
 
 REST_FRAMEWORK = {

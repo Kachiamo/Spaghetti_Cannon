@@ -11,6 +11,9 @@ from .models import Stock
 logging.basicConfig()
 log = logging.getLogger(__name__)
 
+TAGS = [
+    "s&p 500"
+]
 
 def symbol_choices():
     try:
