@@ -36,7 +36,7 @@ class Action(APIView):
             stocks = stocks.filter(tags__contains=tag)
         if symbols and len(symbols) > 0:
             stocks = stocks.filter(symbol__in=symbols)
-        for stock in stocks:
+        for stock in stocks.all():
             log.critical(stock.symbol)
             # Get the trading strategy to backtest
             try:
