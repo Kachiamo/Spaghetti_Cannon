@@ -45,6 +45,7 @@ class Action(APIView):
                 action = strategy.get_action()
                 strategy_returns = strategy.df.iloc[-1]["Strategy_Cumulative_Returns"]
                 stock_returns = strategy.df.iloc[-1]["Stock_Cumulative_Returns"]
+                close = strategy.df.iloc[-1]["Close"]
                 # No penny stocks
                 low = strategy.df["Low"].max()
                 if (action == 1 and buy and strategy_returns > 1 and stock_returns > 1 and strategy_returns > stock_returns and low > 1) or (action == 0 and hold) or (action == -1 and sell):
@@ -52,7 +53,8 @@ class Action(APIView):
                         "symbol": stock.symbol,
                         "action": action,
                         "strategy_returns": strategy_returns,
-                        "stock_returns": stock_returns
+                        "stock_returns": stock_returns,
+                        "close": close,
                     }
                     log.critical(outcome)
                     actions.append(outcome)
